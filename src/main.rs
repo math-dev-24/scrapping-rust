@@ -10,12 +10,13 @@ use std::fs::File;
 use std::io::Write;
 
 
+const BASE_URL: &str = "https://castel.it/catalog/liste-de-produits/flltres-deshydrateurs-00657/filtres-deshydrateurs-hermetiques-ligne-go-green-00815";
+const FILE_NAME: &str = "go-green-deshy-co2.json";
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let base_url = "https://www.castel.it/produits/liste-de-produits/go-green-01030/clapets-anti-retour-etanches-ligne-go-green-00827";
     let client = Client::new();
 
-    let response = client.get(base_url).send()?.text()?;
+    let response = client.get(BASE_URL).send()?.text()?;
     let main_document = Html::parse_document(&response);
 
     let list_pagination = Selector::parse("ul.pagination>li>a.page-link").unwrap();
@@ -27,7 +28,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .filter_map(|el| el.value().attr("href").map(String::from))
         .collect();
 
-    paginations.push(base_url.to_string());
+    paginations.push(BASE_URL.to_string());
 
     println!("{} pages trouvées", paginations.len());
 
@@ -56,7 +57,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 
 fn generate_file(products_data: Vec<ProductData>) -> Result<(), Box<dyn std::error::Error>> {
-    let mut file = File::create("data.json")?;
+    let mut file = File::create(FILE_NAME)?;
     let data_json = serde_json::to_vec(&products_data)?;
     file.write_all(&data_json)?;
     Ok(())
